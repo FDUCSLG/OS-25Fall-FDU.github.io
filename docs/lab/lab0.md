@@ -1,3 +1,7 @@
+---
+prev: false
+---
+
 # Lab 0: Booting
 
 负责助教：唐傑伟 徐厚泽
@@ -221,7 +225,7 @@ git merge lab1-dev
 > **任务 2**
 >
 > 其余 CPU 被放行后，各自打印 "Hello, world! (Core \<cpuid>)" （提示：上面介绍了如何打印字符串）。
-
+>
 > [!info]
 >
 > **预期输出**（后面三行的顺序可变）
