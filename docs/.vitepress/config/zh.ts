@@ -56,7 +56,8 @@ function sidebarGuide(): DefaultTheme.Sidebar {
     {
       text: '实验',
       items: [
-        { text: 'Lab 0: Booting', link: '/lab/lab0' }
+        { text: 'Lab 0: Booting', link: '/lab/lab0' },
+        { text: 'Lab 1: Allocator', link: '/lab/lab1' },
       ]
     },
     {
