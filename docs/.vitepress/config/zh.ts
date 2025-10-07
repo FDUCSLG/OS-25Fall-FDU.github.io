@@ -58,6 +58,7 @@ function sidebarGuide(): DefaultTheme.Sidebar {
       items: [
         { text: 'Lab 0: Booting', link: '/lab/lab0' },
         { text: 'Lab 1: Allocator', link: '/lab/lab1' },
+        { text: 'Lab 2: Process (Kernel Part)', link: '/lab/lab2' },
       ]
     },
     {
