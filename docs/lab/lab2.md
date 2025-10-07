@@ -222,7 +222,7 @@ typedef struct Proc {
 
 我们已经在 kernel\_entry 中编写了调用 proc\_test 的代码。如果一切顺利，将输出 proc\_test PASS。之后会有三个CPU 弹出 Living 的提示，因为收到了时钟中断的信号。
 
-## 6. 提交
+## 8. 提交
 
 **提交方式**：将实验报告提交到 elearning 上，格式为`学号-lab2.pdf`。
 
