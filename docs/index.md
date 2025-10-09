@@ -8,6 +8,7 @@ next: false
 
 ## 📰 News
 
+* **Oct.  9, 2025** Lab 2 Process (Kernel Part) 发布。
 * **Sep. 18, 2025** Lab 1 Allocator 发布。
 * **Sep. 12, 2025** Lab 0  Booting 发布。
 
