@@ -66,6 +66,7 @@ export const shared = defineConfig({
       // 代码组图标
       md.use(groupIconMdPlugin)
     },
+    attrs: { disable: true },
     codeTransformers: [
       transformerTwoslash()
     ]
