@@ -52,7 +52,7 @@ git merge lab2-dev
 
 ## 5. 任务
 
-> [!success]
+> [!info]
 > **任务1**
 >
 > 完成页表配置的相关代码。我们在`Proc`中添加了`pgdir`项，存储进程的用户态内存空间的相关信息。`pgdir`是定义在`pt.h`中的结构体，`pgdir.pt`指向进程的用户页表。如果进程是纯内核态进程，则`pgdir.pt`可以为空。该结构体在后续实验中还会加入内容，我们这里暂时不用关心。
@@ -61,17 +61,17 @@ git merge lab2-dev
 > * 你需要完成`pt.c`中的`free_pgdir`函数。该函数释放给定的`pgdir`。请注意只要释放页表本身所占的空间，不要释放页表所引用的物理页。（页表所引用的物理页目前由测试代码直接管理。在后续实验中，我们会逐渐完成相关的代码，本次实验只要求大家完成页表本身的操作。）
 > * 你可能需要在`proc.c`的`init_proc`中加入`init_pgdir`，在`exit`中加入`free_pgdir`。
 
-> [!success]
+> [!info]
 > **任务2**
 >
 > 完成系统调用的相关代码。我们在`trap.c`中已经提供了在系统调用时调用`syscall_entry`的代码，你需要完成`syscall.c`中的`syscall_entry`函数。该函数传入UserContext作为参数，请从中提取出相应的寄存器，查询`syscall_table`，执行指定的系统调用，并将系统调用的返回值保存到指定的寄存器。
 
-> [!success]
+> [!info]
 > **任务3**
 >
 > 修改你的UserContext。你需要保证UserContext中有spsr、elr、sp（`sp_el0`）寄存器，并结合你的UserContext 添加 `test/user_proc.c` 中的 TODO 部分。
 
-> [!success]
+> [!info]
 > **任务4**
 >
 > 完成结束进程相关的代码。结束进程的逻辑参考了xv6和Linux的设计。我们在`proc.c`中添加了一个函数`kill`。调用kill会设置指定进程的killed标记，并唤醒进程，阻止进程睡眠。进程在返回用户态时会检查killed标记，若有则调用exit退出。
@@ -80,7 +80,7 @@ git merge lab2-dev
 > * 修改你的`sched`代码，使其能够保证，如果当前进程带有killed标记，且new state不为zombie，则调度器直接返回，不做任何操作。（为什么？）
 > * 在`aarch64/trap.c`的`trap_global_handler`函数的末尾加上检查，如果当前进程有killed标记且即将返回到用户态，则调用`exit(-1)`。
 
-> [!success]
+> [!info]
 > **任务5**
 >
 > 改进你的调度器。Lab2的内核进程调度是非抢占式的，Lab3要求大家进行抢占式的调度，你可能需要在调度器中加入时钟中断相关的代码，并注意**调度的公平性问题**。另请注意：我们现在在时钟中断的基础上封装了一层CPU定时器的抽象，**请使用CPU定时器**。
