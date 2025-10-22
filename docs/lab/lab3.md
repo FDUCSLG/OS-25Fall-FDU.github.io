@@ -52,43 +52,38 @@ git merge lab2-dev
 
 ## 5. 任务
 
-{% hint style="success" %}
-**任务1**
+> [!success]
+> **任务1**
+>
+> 完成页表配置的相关代码。我们在`Proc`中添加了`pgdir`项，存储进程的用户态内存空间的相关信息。`pgdir`是定义在`pt.h`中的结构体，`pgdir.pt`指向进程的用户页表。如果进程是纯内核态进程，则`pgdir.pt`可以为空。该结构体在后续实验中还会加入内容，我们这里暂时不用关心。
+>
+> * 你需要完成`pt.c`中的`get_pte`函数。该函数遍历给定的`pgdir`，从中找到对应于指定虚拟地址的页表项，并返回页表项的指针。如果页表项不存在（即其所在的页表未创建），若alloc标记为true，则创建和配置页表项所在的页表及其上级页表（如果需要），然后返回有效的页表项指针，否则返回NULL。（返回的指针指向的页表项可以是无效的。请注意区分页表项和它所引用的物理页。）
+> * 你需要完成`pt.c`中的`free_pgdir`函数。该函数释放给定的`pgdir`。请注意只要释放页表本身所占的空间，不要释放页表所引用的物理页。（页表所引用的物理页目前由测试代码直接管理。在后续实验中，我们会逐渐完成相关的代码，本次实验只要求大家完成页表本身的操作。）
+> * 你可能需要在`proc.c`的`init_proc`中加入`init_pgdir`，在`exit`中加入`free_pgdir`。
 
-完成页表配置的相关代码。我们在`Proc`中添加了`pgdir`项，存储进程的用户态内存空间的相关信息。`pgdir`是定义在`pt.h`中的结构体，`pgdir.pt`指向进程的用户页表。如果进程是纯内核态进程，则`pgdir.pt`可以为空。该结构体在后续实验中还会加入内容，我们这里暂时不用关心。
+> [!success]
+> **任务2**
+>
+> 完成系统调用的相关代码。我们在`trap.c`中已经提供了在系统调用时调用`syscall_entry`的代码，你需要完成`syscall.c`中的`syscall_entry`函数。该函数传入UserContext作为参数，请从中提取出相应的寄存器，查询`syscall_table`，执行指定的系统调用，并将系统调用的返回值保存到指定的寄存器。
 
-* 你需要完成`pt.c`中的`get_pte`函数。该函数遍历给定的`pgdir`，从中找到对应于指定虚拟地址的页表项，并返回页表项的指针。如果页表项不存在（即其所在的页表未创建），若alloc标记为true，则创建和配置页表项所在的页表及其上级页表（如果需要），然后返回有效的页表项指针，否则返回NULL。（返回的指针指向的页表项可以是无效的。请注意区分页表项和它所引用的物理页。）
-* 你需要完成`pt.c`中的`free_pgdir`函数。该函数释放给定的`pgdir`。请注意只要释放页表本身所占的空间，不要释放页表所引用的物理页。（页表所引用的物理页目前由测试代码直接管理。在后续实验中，我们会逐渐完成相关的代码，本次实验只要求大家完成页表本身的操作。）
-* 你可能需要在`proc.c`的`init_proc`中加入`init_pgdir`，在`exit`中加入`free_pgdir`。
-{% endhint %}
+> [!success]
+> **任务3**
+>
+> 修改你的UserContext。你需要保证UserContext中有spsr、elr、sp（`sp_el0`）寄存器，并结合你的UserContext 添加 `test/user_proc.c` 中的 TODO 部分。
 
-{% hint style="success" %}
-**任务2**
+> [!success]
+> **任务4**
+>
+> 完成结束进程相关的代码。结束进程的逻辑参考了xv6和Linux的设计。我们在`proc.c`中添加了一个函数`kill`。调用kill会设置指定进程的killed标记，并唤醒进程，阻止进程睡眠。进程在返回用户态时会检查killed标记，若有则调用exit退出。
+>
+> * 实现`proc.c`中的`kill`函数。该函数遍历进程树，搜索指定pid且状态不为unused（可参考`sched.c`中给出的`is_unused`，访问调度信息时加锁是个好习惯，但这里其实不加锁也没啥事）的进程，如果进程不存在，返回-1。对于找到的进程，设置`struct proc`的`killed`标记，并调用`activate_proc`唤醒进程。完成之后，返回0。请注意使用进程树的锁。
+> * 修改你的`sched`代码，使其能够保证，如果当前进程带有killed标记，且new state不为zombie，则调度器直接返回，不做任何操作。（为什么？）
+> * 在`aarch64/trap.c`的`trap_global_handler`函数的末尾加上检查，如果当前进程有killed标记且即将返回到用户态，则调用`exit(-1)`。
 
-完成系统调用的相关代码。我们在`trap.c`中已经提供了在系统调用时调用`syscall_entry`的代码，你需要完成`syscall.c`中的`syscall_entry`函数。该函数传入UserContext作为参数，请从中提取出相应的寄存器，查询`syscall_table`，执行指定的系统调用，并将系统调用的返回值保存到指定的寄存器。
-{% endhint %}
-
-{% hint style="success" %}
-**任务3**
-
-修改你的UserContext。你需要保证UserContext中有spsr、elr、sp（`sp_el0`）寄存器，并结合你的UserContext 添加 `test/user_proc.c` 中的 TODO 部分。
-{% endhint %}
-
-{% hint style="success" %}
-**任务4**
-
-完成结束进程相关的代码。结束进程的逻辑参考了xv6和Linux的设计。我们在`proc.c`中添加了一个函数`kill`。调用kill会设置指定进程的killed标记，并唤醒进程，阻止进程睡眠。进程在返回用户态时会检查killed标记，若有则调用exit退出。
-
-* 实现`proc.c`中的`kill`函数。该函数遍历进程树，搜索指定pid且状态不为unused（可参考`sched.c`中给出的`is_unused`，访问调度信息时加锁是个好习惯，但这里其实不加锁也没啥事）的进程，如果进程不存在，返回-1。对于找到的进程，设置`struct proc`的`killed`标记，并调用`activate_proc`唤醒进程。完成之后，返回0。请注意使用进程树的锁。
-* 修改你的`sched`代码，使其能够保证，如果当前进程带有killed标记，且new state不为zombie，则调度器直接返回，不做任何操作。（为什么？）
-* 在`aarch64/trap.c`的`trap_global_handler`函数的末尾加上检查，如果当前进程有killed标记且即将返回到用户态，则调用`exit(-1)`。
-{% endhint %}
-
-{% hint style="success" %}
-**任务5**
-
-改进你的调度器。Lab2的内核进程调度是非抢占式的，Lab3要求大家进行抢占式的调度，你可能需要在调度器中加入时钟中断相关的代码，并注意**调度的公平性问题**。另请注意：我们现在在时钟中断的基础上封装了一层CPU定时器的抽象，**请使用CPU定时器**。
-{% endhint %}
+> [!success]
+> **任务5**
+>
+> 改进你的调度器。Lab2的内核进程调度是非抢占式的，Lab3要求大家进行抢占式的调度，你可能需要在调度器中加入时钟中断相关的代码，并注意**调度的公平性问题**。另请注意：我们现在在时钟中断的基础上封装了一层CPU定时器的抽象，**请使用CPU定时器**。
 
 我们在`user_proc.c`中编写了用户页表和用户进程相关的测试代码，在`cpu.c`中通过CPU定时器添加了CPU定时输出消息的代码。如果一切正常，你将看到`vm_test PASS`和`user_proc_test PASS`。
 
@@ -102,11 +97,10 @@ git merge lab2-dev
 
 **截止时间**：<mark style="color:red;">**11月7日23:59**</mark>。
 
-{% hint style="danger" %}
-**逾期提交将扣除部分分数**
-
-计算方式为 $$\text{score}_{\text{final}} = \text{score} \cdot \left(1 - n \cdot 20\% \right)$$，其中 $$n$$ 为迟交天数，不满一天按一天计算）。
-{% endhint %}
+> [!danger]
+> **逾期提交将扣除部分分数**
+>
+> 计算方式为 $$\text{score}_{\text{final}} = \text{score} \cdot \left(1 - n \cdot 20\% \right)$$，其中 $$n$$ 为迟交天数，不满一天按一天计算）。
 
 报告中可以包括下面内容
 
