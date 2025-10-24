@@ -8,6 +8,7 @@ next: false
 
 ## 📰 News
 
+* **Oct. 24, 2025** [Lab 3 Process (User Part)](/lab/lab3) 发布。
 * **Oct.  9, 2025** [Lab 2 Process (Kernel Part)](/lab/lab2) 发布。
 * **Sep. 18, 2025** [Lab 1 Allocator](/lab/lab1) 发布。
 * **Sep. 12, 2025** [Lab 0  Booting](/lab/lab0) 发布。
