@@ -31,7 +31,7 @@ git merge lab2-dev
 ## 2. Codebase 更新说明
 
 * 更新了信号量的规则，将信号量的锁定和解锁剥离出来，便于借助信号量实现更丰富的同步功能。详见 `common/sem.c` 和 `common/sem.h` 。这个改动不影响你原有的代码，但是你依然需要注意一些使用信号量和锁带来的并发问题。
-* 在通过 Lab2 的测试后，**请将`activate_proc`中 「若`thisproc()->state==ZOMBIE`则panic」 的规则去除**（如果你是这样写的话）。如果`thisproc()->state==ZOMBIE`，请不做任何操作，并返回 false。这项改动有助于你编写`kill`函数。
+* 在通过 Lab2 的测试后，**请将`activate_proc`中 「若`p->state==ZOMBIE`则panic」 的规则去除**（如果你是这样写的话）。如果`p->state==ZOMBIE`，请不做任何操作，并返回 false。这项改动有助于你编写`kill`函数。
 * 在时钟中断上抽象出了 CPU 定时器的概念。详见 `kernel/cpu.c` 和 `kernel/cpu.h`。
 * 在 `sched` 函数中添加了 `attach_pgdir(&next->pgdir)` ，用于在进入用户态时设置页表。
 * 修复了 `common/list.c` 中 `queue_push` 没有增加 `x->sz` 的问题。
