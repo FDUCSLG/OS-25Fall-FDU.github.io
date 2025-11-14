@@ -139,7 +139,7 @@ void block_free(int block_no);
 
 对于多个事务的提交，时间序列图如下：
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="/assets/lab5-1.png" alt=""><figcaption></figcaption></figure>
 
 一个典型的系统启动中的初始化过程如下：（`recover_from_log`）
 
