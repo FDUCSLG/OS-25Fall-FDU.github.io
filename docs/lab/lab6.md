@@ -1,4 +1,4 @@
-# Lab 6: Inode
+# Lab 6: Inode-based File System
 
 负责助教：[唐傑伟](mailto:22302010060@m.fudan.edu.cn)
 
