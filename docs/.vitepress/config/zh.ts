@@ -62,6 +62,7 @@ function sidebarGuide(): DefaultTheme.Sidebar {
         { text: 'Lab 3: Process (User Part)', link: '/lab/lab3' },
         { text: 'Lab 4: Async IO', link: '/lab/lab4' },
         { text: 'Lab 5: Logging File System', link: '/lab/lab5' },
+        { text: 'Lab 6: Inode-based File System', link: '/lab/lab6' },
       ]
     },
     {

@@ -2,8 +2,6 @@
 
 负责助教：[唐傑伟](mailto:22302010060@m.fudan.edu.cn)
 
-> [!important]
-> 本lab还在编辑中，内容仅供参考并随时可能发生变化。
 
 本次实验的目的是熟悉日志文件系统和块设备缓存的实现。
 
@@ -44,7 +42,7 @@ git merge lab4-dev
 * 为实现 unalertable wait，我们参考了 Linux 的 `uninterruptable wait` 的实现，为 `procstate` 添加了一项 `DEEPSLEEPING`，`DEEPSLEEPING` 与 `SLEEPING` 基本相同，区别仅在于 alert 操作对 `DEEPSLEEPING` 无效。**你需要在调度器相关代码中将 `DEEPSLEEPING` 纳入考虑。** 除 activate 操作外，一般可以将 `DEEPSLEEPING` 视为 `SLEEPING` 处理。
 * 将原先的 `activate_proc` 重命名为 `_activate_proc`，添加了参数 `onalert`，以指出是正常唤醒还是被动打断，并用宏定义 `activate_proc` 为 `onalert = false` 的 `_activate_proc`，`alert_proc` 为 `onalert=true` 的`_activate_proc`。**你需要修改 `_activate_proc` 的代码，并在 `kill` 中换用 `alert_proc` 唤醒进程**
 
-## 3. 文件系统扫盲
+## 3. 文件系统
 
 ### 3.1. 从磁盘到块设备抽象
 
@@ -99,7 +97,7 @@ void block_release(Block *block);
 > [!danger]
 > **注意**
 >
-> 这里的 0 代表我们的文件系统的起始块号，不是实际的 SD 卡的起始块号。SD 卡布局参考 Lab 4.2 文档中相关布局。
+> 这里的 0 代表我们的文件系统的起始块号，不是实际的虚拟存储的起始块号。文件存储布局请参考 Lab 4。
 
 | 起始块号           | 长度                                             | 用途       |
 | -------------- | ---------------------------------------------- | -------- |
@@ -159,6 +157,11 @@ void block_free(int block_no);
 ### 3.5. 事务：文件系统上的操作抽象
 
 在日志文件系统中，我们将**一次文件系统操作**称为一个**事务**（Transaction）。一个事务中可能包含多个写块的操作，但是这些操作要么全部成功，要么全部失败。
+
+> [!important]
+> **思考**
+>
+> 你能够举出“操作要么全部成功，要么全部失败”的例子吗？
 
 先看接口：
 
@@ -230,6 +233,11 @@ bcache->end_op(&ctx);
 > * `on alert = false`时表示被动唤醒，这时 `DEEPSLEEPING` 状态下的进程会被唤醒，需要将其加入调度队列并设置为`RUNNABLE`，返回`true`。
 >
 > 其余状态不需要更改。
+
+> [!important]
+> **思考**
+>
+> 我们为什么需要`DEEPSLEEPING`状态？
 
 > [!important]
 > **任务 3**
@@ -433,13 +441,24 @@ $ make clean
 >
 > 上述测试只用于检测`cache.c`中内容是否正确运行， 任务 1-3 的内容是否正确完成至少需要确保在 `build/`运行`make qemu`时能正确跑通（可以打开`core.c`中`proc_test()`和`user_proc_test`尝试运行）
 
-## 6. 提交
+## 6. 评分标准
+
+本次实验的评分标准如下：
+
+- **核心实现**：70%
+- **前序 Lab2、Lab3 功能正确**：10%
+- **思考题**：40%
+
+## 7. 提交
 
 **提交方式**：将实验报告提交到 elearning 上，格式为 `学号-lab5.pdf` 。
 
 **注意**：从 `lab1` 开始，用于评分的代码以实验报告提交时为准。如果需要使用新的代码版本，请重新提交实验报告。
 
 **截止时间**：<mark style="color:red;">**12月7日23:59**</mark>。
+
+
+
 
 > [!danger]
 >
@@ -450,13 +469,15 @@ $ make clean
 报告中可以包括下面内容
 
 * 代码运行效果展示
-* 实现思路和创新点（创新点如提高alloc效率等）
+* <mark style="color:red;">**讨论你的程序在事务执行的各个阶段（事务开始、块、写回）崩溃时，以及并发时下如何保证一致性。**</mark>
+* <mark style="color:red;">**讨论为了实现文件系统，你对调度做了哪些改动。**</mark>
+* 实现思路和创新点
 * 对后续实验的建议
 *   其他任何你想写的内容
 
     > ~~你甚至可以再放一只可爱猫猫~~
 
-报告中不应有大段代码的复制。如有使用本地环境进行实验的同学，请联系助教提交代码。使用服务器进行实验的同学，助教会在服务器上检查，不需要另外提交代码。
+报告中不应有大段代码的复制。如有使用本地环境进行实验的同学，请在elearning上提交代码，提交前执行`make clean`。使用服务器进行实验的同学，助教会在服务器上检查，不需要另外提交代码。
 
 在服务器上操作的同学，此次实验完成后请提交（或者说创建一个新分支）到 `lab5-submission` 分支，助教会使用你在此分支上提交记录来批作业。如果此分支最后提交时间晚于实验报告提交时间，助教会选择此分支上在实验报告提交时间前的最后一个提交作为批改代码。
 
@@ -471,7 +492,7 @@ git commit -m "your final commit message"
 git checkout -b lab5-submission
 ```
 
-## 7. 参考资料
+## 8. 参考资料
 
 1. OS2020助教对Lab中涉及的xv6文件系统的介绍：https://github.com/FDUCSLG/OS-2022Fall-Fudan/blob/lab10/doc/filesystem-v4.pdf （可阅读其中关于本次实验(P. 26-P. 33)的部分，其中还包含了下次实验(inode等)的内容）
 2. 聊聊 xv6 中的文件系统：https://www.cnblogs.com/KatyuMarisaBlog/p/14366115.html
