@@ -449,6 +449,35 @@ $ make clean
 - **前序 Lab2、Lab3 功能正确**：10%
 - **思考题**：40%
 
+
+| Test              | Score |
+| ----------------- | ----- |
+| init              | 2     |
+| read_write        | 4     |
+| loop_read         | 2     |
+| reuse             | 2     |
+| lru               | 2     |
+| atomic_op         | 2     |
+| overflow          | 3     |
+| resident          | 3     |
+| local_absorption  | 3     |
+| global_absorption | 3     |
+| replay            | 3     |
+| alloc             | 3     |
+| alloc_free        | 3     |
+| concurrent_acquire | 5     |
+| concurrent_sync    | 5     |
+| concurrent_alloc   | 5     |
+| simple_crash | 3     |
+| single       | 4     |
+| parallel_1   | 4     |
+| parallel_2   | 4     |
+| parallel_3   | 2     |
+| parallel_4   | 2     |
+| banker       | 1     |
+
+
+
 ## 7. 提交
 
 **提交方式**：将实验报告提交到 elearning 上，格式为 `学号-lab5.pdf` 。
