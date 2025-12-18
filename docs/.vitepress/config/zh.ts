@@ -63,6 +63,7 @@ function sidebarGuide(): DefaultTheme.Sidebar {
         { text: 'Lab 4: VirtIO Driver', link: '/lab/lab4' },
         { text: 'Lab 5: Logging File System', link: '/lab/lab5' },
         { text: 'Lab 6: Inode-based File System', link: '/lab/lab6' },
+        { text: 'Lab Final', link: '/lab/lab-final' },
       ]
     },
     {

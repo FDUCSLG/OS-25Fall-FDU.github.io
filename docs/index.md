@@ -8,6 +8,7 @@ next: false
 
 ## 📰 News
 
+* **Dec. 18, 2025** [Lab Final](/lab/lab-final)发布。
 * **Nov. 21, 2025** [Lab 6 Inode-based File System](/lab/lab6) 发布。
 * **Nov. 14, 2025** [Lab 5 Logging File System](/lab/lab5) 发布。
 * **Nov. 12, 2025** [Lab 4 Async IO](/lab/lab4) 发布。
