@@ -533,7 +533,7 @@ ELF 是一种用于二进制文件、可执行文件等文件的文件格式，�
 
 其中从 `text` 到 `stack`，对应的虚拟地址一般是逐渐增加的（见下图）。我们可以通过 `size` 命令查看一个可执行文件的各个段的大小。
 
-<figure><img src="../.gitbook/assets/12181733417620_.pic.jpg" alt=""><figcaption></figcaption></figure>
+<figure><img src="/assets/12181733417620_.pic.jpg" alt=""><figcaption></figcaption></figure>
 
 我们实验中同样采用段（`struct section`对应于上图中的`vm_area_struct`）的数据结构来标识一个可执行文件在执行时拥有的各类段的信息。
 
