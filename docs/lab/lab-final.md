@@ -12,12 +12,11 @@
 | Mmap            | 10 | [孔令宇](mailto:lykong22@m.fudan.edu.cn) | O  |
 | 自选 Bonus        | 20 | TBC                                     | O  |
 
-{% hint style="info" %}
-**说明**
-
-* `O`：不实现此部分也可以启动 shell。如果时间来不及，请优先保证你能启动 shell，因为启动 shell 所占分值较大。建议优先完成：File Descriptor + Exec + Fork + Shell + Console + Pipe。
-* 满分 100 分，超出的部分算 bonus。
-{% endhint %}
+> [!info]
+> **说明**
+>
+> * `O`：不实现此部分也可以启动 shell。如果时间来不及，请优先保证你能启动 shell，因为启动 shell 所占分值较大。建议优先完成：File Descriptor + Exec + Fork + Shell + Console + Pipe。
+> * 满分 100 分，超出的部分算 bonus。
 
 ## 1. File Descriptor
 
@@ -27,40 +26,39 @@
 
 因此，我们需要为它们再设计一套抽象，使得用户态程序可以通过同一套机制来访问它们中的任何一个。这套机制就是**文件**（file）。
 
-{% hint style="info" %}
-**从面向对象的角度理解“一切皆文件”**
-
-从面向对象的角度来看，“一切皆文件”可以将“文件”这一概念视为一个抽象类（abstract class）或接口（interface）。这一理念的核心在于**通过一套统一的接口操作多种资源**。这一原则不仅能够最大限度地复用已有代码，还具备良好的可扩展性，符合软件工程中久经验证的优秀实践之一：[开闭原则（OCP）](https://zh.wikipedia.org/zh-cn/%E5%BC%80%E9%97%AD%E5%8E%9F%E5%88%99)。
-
-在 Linux 系统中，这套**接口**的实现通过以下结构体定义：
-
-```c
-struct file_operations {
-  struct module *owner;
-	loff_t (*llseek) (struct file *, loff_t, int);
-	ssize_t (*read) (struct file *, char *, size_t, loff_t *);
-	ssize_t (*write) (struct file *, const char *, size_t, loff_t *);
-	int (*readdir) (struct file *, void *, filldir_t);
-	unsigned int (*poll) (struct file *, struct poll_table_struct *);
-	int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
-	int (*mmap) (struct file *, struct vm_area_struct *);
-	int (*open) (struct inode *, struct file *);
-	int (*flush) (struct file *);
-	int (*release) (struct inode *, struct file *);
-	int (*fsync) (struct file *, struct dentry *, int datasync);
-	int (*fasync) (int, struct file *, int);
-	int (*lock) (struct file *, int, struct file_lock *);
-	ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
-	ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
-};
-```
-
-支持该接口的资源通常以数据为中心。例如：
-
-* 键盘作为字符设备，管理用户输入的字符数据。
-* 管道文件管理一段由某进程输出、供另一进程输入的数据。
-* `/dev/random` 设备管理随机数据。
-{% endhint %}
+> [!info]
+> **从面向对象的角度理解"一切皆文件"**
+>
+> 从面向对象的角度来看，"一切皆文件"可以将"文件"这一概念视为一个抽象类（abstract class）或接口（interface）。这一理念的核心在于**通过一套统一的接口操作多种资源**。这一原则不仅能够最大限度地复用已有代码，还具备良好的可扩展性，符合软件工程中久经验证的优秀实践之一：[开闭原则（OCP）](https://zh.wikipedia.org/zh-cn/%E5%BC%80%E9%97%AD%E5%8E%9F%E5%88%99)。
+>
+> 在 Linux 系统中，这套**接口**的实现通过以下结构体定义：
+>
+> ```c
+> struct file_operations {
+>   struct module *owner;
+> 	loff_t (*llseek) (struct file *, loff_t, int);
+> 	ssize_t (*read) (struct file *, char *, size_t, loff_t *);
+> 	ssize_t (*write) (struct file *, const char *, size_t, loff_t *);
+> 	int (*readdir) (struct file *, void *, filldir_t);
+> 	unsigned int (*poll) (struct file *, struct poll_table_struct *);
+> 	int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
+> 	int (*mmap) (struct file *, struct vm_area_struct *);
+> 	int (*open) (struct inode *, struct file *);
+> 	int (*flush) (struct file *);
+> 	int (*release) (struct inode *, struct file *);
+> 	int (*fsync) (struct file *, struct dentry *, int datasync);
+> 	int (*fasync) (int, struct file *, int);
+> 	int (*lock) (struct file *, int, struct file_lock *);
+> 	ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
+> 	ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
+> };
+> ```
+>
+> 支持该接口的资源通常以数据为中心。例如：
+>
+> * 键盘作为字符设备，管理用户输入的字符数据。
+> * 管道文件管理一段由某进程输出、供另一进程输入的数据。
+> * `/dev/random` 设备管理随机数据。
 
 文件除了需要持有底层对象以外，还有一些额外的字段：
 
@@ -99,70 +97,65 @@ struct file {
 
 ### 1.1. 任务
 
-{% hint style="success" %}
-**任务 1**：实现 `src/fs/file.c` 的下列函数：
+> [!important]
+> **任务 1**：实现 `src/fs/file.c` 的下列函数：
+>
+> ```c
+> // 从全局文件表中分配一个空闲的文件
+> struct file* file_alloc();
+>
+> // 获取文件的元信息（类型、偏移量等）
+> int file_stat(struct file* f, struct stat* st);
+>
+> // 关闭文件
+> void file_close(struct file* f);
+>
+> // 将长度为 n 的 addr 写入 f 的当前偏移处
+> isize file_read(struct file* f, char* addr, isize n);
+>
+> // 将长度为 n 的 addr 从 f 的当前偏移处读入
+> isize file_write(struct file* f, char* addr, isize n);
+>
+> // 文件的引用数+1
+> struct file* file_dup(struct file* f);
+>
+> // 初始化全局文件表
+> void init_ftable();
+>
+> // 初始化/释放进程文件表
+> void init_oftable(struct oftable*);
+> void free_oftable(struct oftable*);
+> ```
 
-```c
-// 从全局文件表中分配一个空闲的文件
-struct file* file_alloc();
+> [!important]
+> **任务 2**：截止目前我们都未编写路径字符串（例如 `/this/is//my/path/so_cool.txt`）的解析逻辑。我们在 `src/fs/inode.c` 中实现了比较困难的部分，你需要完成其中的`namex`函数（可见`inode.c`中的注释部分）：
+>
+> ```c
+> static Inode* namex(const char* path, bool nameiparent, char* name, OpContext* ctx)
+> ```
 
-// 获取文件的元信息（类型、偏移量等）
-int file_stat(struct file* f, struct stat* st);
+> [!important]
+> **任务 3**：为了对接用户态程序，我们需要在 src/kernel/sysfile.c 中实现一些系统调用：
+>
+> * [close(3)](https://linux.die.net/man/3/close)
+> * [chdir(3)](https://linux.die.net/man/3/chdir)
 
-// 关闭文件
-void file_close(struct file* f);
+> [!important]
+> **任务 4**：实现辅助函数：
+>
+> ```c
+> // 从描述符获得文件
+> static struct file *fd2file(int fd);
+>
+> // 从进程文件表中分配一个空闲的位置给 f
+> int fdalloc(struct file *f);
+>
+> // 根据路径创建一个 Inode
+> Inode *create(const char *path, short type, short major, short minor, OpContext *ctx);
+> ```
 
-// 将长度为 n 的 addr 写入 f 的当前偏移处
-isize file_read(struct file* f, char* addr, isize n);
-
-// 将长度为 n 的 addr 从 f 的当前偏移处读入
-isize file_write(struct file* f, char* addr, isize n);
-
-// 文件的引用数+1
-struct file* file_dup(struct file* f);
-
-// 初始化全局文件表
-void init_ftable();
-
-// 初始化/释放进程文件表
-void init_oftable(struct oftable*);
-void free_oftable(struct oftable*);
-```
-{% endhint %}
-
-{% hint style="success" %}
-**任务 2**：截止目前我们都未编写路径字符串（例如 `/this/is//my/path/so_cool.txt`）的解析逻辑。我们在 `src/fs/inode.c` 中实现了比较困难的部分，你需要完成其中的`namex`函数（可见`inode.c`中的注释部分）：
-
-```c
-static Inode* namex(const char* path, bool nameiparent, char* name, OpContext* ctx)
-```
-{% endhint %}
-
-{% hint style="success" %}
-**任务 3**：为了对接用户态程序，我们需要在 src/kernel/sysfile.c 中实现一些系统调用：
-
-* [close(3)](https://linux.die.net/man/3/close)
-* [chdir(3)](https://linux.die.net/man/3/chdir)
-{% endhint %}
-
-{% hint style="success" %}
-**任务 4**：实现辅助函数：
-
-```c
-// 从描述符获得文件
-static struct file *fd2file(int fd);
-
-// 从进程文件表中分配一个空闲的位置给 f
-int fdalloc(struct file *f);
-
-// 根据路径创建一个 Inode
-Inode *create(const char *path, short type, short major, short minor, OpContext *ctx);
-```
-{% endhint %}
-
-{% hint style="success" %}
-**任务 5（可以以后再做）**：参考讲解部分，修改 `inode.c` 中 `read` 和 `write` 函数，以支持设备文件。
-{% endhint %}
+> [!important]
+> **任务 5（可以以后再做）**：参考讲解部分，修改 `inode.c` 中 `read` 和 `write` 函数，以支持设备文件。
 
 ## 2. Fork & Exec
 
@@ -239,13 +232,11 @@ typedef struct {
 } Elf64_Phdr;
 ```
 
-{% hint style="warning" %}
-**注意**：ELF 文件中的 section header 和实验中的 `struct section` 并不一样，本次实验不用考虑 ELF 中的 section header，但是需要明确 ELF 中的 `Elf64_Phdr` 与 lab 中 `struct section` 的对应关系。
-{% endhint %}
+> [!warning]
+> **注意**：ELF 文件中的 section header 和实验中的 `struct section` 并不一样，本次实验不用考虑 ELF 中的 section header，但是需要明确 ELF 中的 `Elf64_Phdr` 与 lab 中 `struct section` 的对应关系。
 
-{% hint style="info" %}
-**提示**：可以参考 [xv6 加载 ELF 的实现](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/exec.c#L36)。
-{% endhint %}
+> [!info]
+> **提示**：可以参考 [xv6 加载 ELF 的实现](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/exec.c#L36)。
 
 ### 2.2. `fork()` 系统调用
 
@@ -253,17 +244,14 @@ typedef struct {
 
 在实现 `fork()` 的内核侧时，我们需要从进程的结构体（`Proc`）入手，判断其中的成员是否需要复制，是否需要修改。例如，我们需要深拷贝亲进程的页表给子进程，需要“复制”亲进程的文件描述符给子进程等。
 
-{% hint style="info" %}
-**思考**：文件描述符的“复制”是什么意思？
-{% endhint %}
+> [!info]
+> **思考**：文件描述符的"复制"是什么意思？
 
-{% hint style="warning" %}
-**注意**：为了配合 `fork()`，你可能需要在原先的 `UserContext` 中加入所有寄存器的值。此外，你还需要保存`tpidr0` 和 `q0`，因为musl libc会使用它们。
-{% endhint %}
+> [!warning]
+> **注意**：为了配合 `fork()`，你可能需要在原先的 `UserContext` 中加入所有寄存器的值。此外，你还需要保存`tpidr0` 和 `q0`，因为musl libc会使用它们。
 
-{% hint style="info" %}
-**提示**：可以参考 [xv6 fork 的实现](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/proc.c#L280)。
-{% endhint %}
+> [!info]
+> **提示**：可以参考 [xv6 fork 的实现](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/proc.c#L280)。
 
 ### 2.3. `execve()` 系统调用
 
@@ -278,13 +266,11 @@ int execve(const char* path, char* const argv[], char* const envp[])
 
 `execve()` 替换当前进程为 `path` 所指的 ELF 格式文件，加载该 ELF 文件，并运行该程序。你需要读取 `Elf64_Ehdr` 和 `Elf64_Phdr` 结构，注意根据 `p_flags` 的信息判断 section 类型，把 `p_vaddr`, `p_memsz`, `p_offset` 等信息填入到实验框架中的 `struct section` 对应位置；将文件中的代码和数据加载到内存中，并**设置好用户栈、堆等空间**；最后跳转到 ELF 文件的入口地址开始执行。
 
-{% hint style="info" %}
-**思考**：替换 ELF 文件时，当前进程的哪些部分需要释放，哪些部分不需要？
-{% endhint %}
+> [!info]
+> **思考**：替换 ELF 文件时，当前进程的哪些部分需要释放，哪些部分不需要？
 
-{% hint style="info" %}
-**思考**：是否需要把 `argv` 和 `envp` 中的实际文本信息复制到新进程的地址空间中？
-{% endhint %}
+> [!info]
+> **思考**：是否需要把 `argv` 和 `envp` 中的实际文本信息复制到新进程的地址空间中？
 
 {% hint style="info" %}
 **提示**：下面提供了一个 `execve` 的大致流程：
@@ -333,12 +319,11 @@ int execve(const char* path, char* const argv[], char* const envp[])
 ```
 {% endhint %}
 
-{% hint style="info" %}
-**提示**：在`execve()`中，一般可执行文件中可以加载的只有两段：RX的部分+RW的部分（其它部分会跳过）（因此只设置两种状态，一种是RX，另一种是RW）
-
-* RX的部分： 代码部分，主要包括 text 段，属性为 ST\_FILE + RO
-* RW的部分：数据部分，包括了 data + bss 段
-{% endhint %}
+> [!info]
+> **提示**：在`execve()`中，一般可执行文件中可以加载的只有两段：RX的部分+RW的部分（其它部分会跳过）（因此只设置两种状态，一种是RX，另一种是RW）
+>
+> * RX的部分： 代码部分，主要包括 text 段，属性为 ST\_FILE + RO
+> * RW的部分：数据部分，包括了 data + bss 段
 
 ### 2.4. `copyout`
 
@@ -358,17 +343,16 @@ int copyout(struct pgdir* pd, void* va, void *p, usize len)
 
 ### 2.5. 任务
 
-{% hint style="success" %}
-**任务 1**：实现下列内容：
-
-* `kernel/syscall.c` 中的 `user_readable` 和 `user_writeable`：检查syscall中由用户程序传入的指针所指向的内存空间是否有效且可被用户程序读写。
-* `kernel/proc.c` 中的 `fork`。
-* `kernel/exec.c` 中的 `execve`。
-* `kernel/pt.c` 中的 `copyout`（可选）。
-* `kernel/paging.c` 中的 `copy_sections`。
-* `kernel/paging.c` 中的 `init_sections`：不需要再单独初始化 heap 段。
-* `kernel/paging.c` 中的 `pgfault`：增加有关文件的处理逻辑。
-{% endhint %}
+> [!important]
+> **任务 1**：实现下列内容：
+>
+> * `kernel/syscall.c` 中的 `user_readable` 和 `user_writeable`：检查syscall中由用户程序传入的指针所指向的内存空间是否有效且可被用户程序读写。
+> * `kernel/proc.c` 中的 `fork`。
+> * `kernel/exec.c` 中的 `execve`。
+> * `kernel/pt.c` 中的 `copyout`（可选）。
+> * `kernel/paging.c` 中的 `copy_sections`。
+> * `kernel/paging.c` 中的 `init_sections`：不需要再单独初始化 heap 段。
+> * `kernel/paging.c` 中的 `pgfault`：增加有关文件的处理逻辑。
 
 ## 3. Shell
 
@@ -376,20 +360,17 @@ int copyout(struct pgdir* pd, void* va, void *p, usize len)
 
 ### 3.1. 任务
 
-{% hint style="success" %}
-**任务1**：补全两个用户态程序的实现：
+> [!important]
+> **任务1**：补全两个用户态程序的实现：
+>
+> 1. [cat(1)](https://linux.die.net/man/1/cat)：`src/user/cat/main.c`。要求支持`cat + 单一文件名`的命令形式，即输出单一文件，其他功能可以自行补充。
+> 2. [mkdir(1)](https://linux.die.net/man/1/mkdir)：`src/user/mkdir/main.c`。
 
-1. [cat(1)](https://linux.die.net/man/1/cat)：`src/user/cat/main.c`。要求支持`cat + 单一文件名`的命令形式，即输出单一文件，其他功能可以自行补充。
-2. [mkdir(1)](https://linux.die.net/man/1/mkdir)：`src/user/mkdir/main.c`。
-{% endhint %}
+> [!important]
+> **任务2**：内核启动后执行第一个用户态程序 `src/user/init.S`。在 `src/kernel/core.c` 的 `kernel_entry()` 中手动创建并启动第一个用户态进程。(即将 `init.S` 的代码映射到进程的 section 中)。
 
-{% hint style="success" %}
-**任务2**：内核启动后执行第一个用户态程序 `src/user/init.S`。在 `src/kernel/core.c` 的 `kernel_entry()` 中手动创建并启动第一个用户态进程。(即将 `init.S` 的代码映射到进程的 section 中)。
-{% endhint %}
-
-{% hint style="info" %}
-**提示**：可以在`core.c`中使用 `extern char icode[]; extern char eicode[];` 来获得 `init.S` 的代码段的内核地址。这样的操作我们在 Lab 0 中清空 BSS 段时也用过。
-{% endhint %}
+> [!info]
+> **提示**：可以在`core.c`中使用 `extern char icode[]; extern char eicode[];` 来获得 `init.S` 的代码段的内核地址。这样的操作我们在 Lab 0 中清空 BSS 段时也用过。
 
 实现成功后，内核将输出 shell 的 prompt（`$`）。此时，你仍然无法与内核交互，下面我们将实现 console，支持用户输入命令，运行程序。
 
@@ -442,24 +423,21 @@ static void uartintr()
 
 ### 4.1. 任务
 
-{% hint style="success" %}
-**任务 1**：完成 `console_intr`，处理下述情况：
+> [!important]
+> **任务 1**：完成 `console_intr`，处理下述情况：
+>
+> 1. `backspace`：对应字符 `c` 为 `\x7f`。删除前一个字符，即 `input.edit_idx--`。注意，位于 `input.write_idx` 前的已回显字符不能删除。
+> 2. `Ctrl+U`：删除一行。
+> 3. `Ctrl+D`：更新 `input.write_idx` 到 `input.edit_idx`。表示 `EOF`。本身也要写入缓冲区和回显。
+> 4. 普通字符写入和回显。
+>
+> 回显会用到 `uart_put_char` 向console写入内容。
 
-1. `backspace`：对应字符 `c` 为 `\x7f`。删除前一个字符，即 `input.edit_idx--`。注意，位于 `input.write_idx` 前的已回显字符不能删除。
-2. `Ctrl+U`：删除一行。
-3. `Ctrl+D`：更新 `input.write_idx` 到 `input.edit_idx`。表示 `EOF`。本身也要写入缓冲区和回显。
-4. 普通字符写入和回显。
+> [!important]
+> **任务 2**：完成 `console_read` 和 `console_write`，并在 `inode_read` 和 `inode_write` 中调用（前面我们已经提到，我们复用了 inode 作为设备文件的抽象）。
 
-回显会用到 `uart_put_char` 向console写入内容。
-{% endhint %}
-
-{% hint style="success" %}
-**任务 2**：完成 `console_read` 和 `console_write`，并在 `inode_read` 和 `inode_write` 中调用（前面我们已经提到，我们复用了 inode 作为设备文件的抽象）。
-{% endhint %}
-
-{% hint style="info" %}
-**提示**：可以参考 [xv6 console](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/console.c) 的实现。
-{% endhint %}
+> [!info]
+> **提示**：可以参考 [xv6 console](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/console.c) 的实现。
 
 ## 5. Pipe
 
@@ -504,17 +482,14 @@ static void uartintr()
 
 ### 5.1. 任务
 
-{% hint style="success" %}
-**任务1**：完成 `pipe.c` 中的内容。
-{% endhint %}
+> [!important]
+> **任务1**：完成 `pipe.c` 中的内容。
 
-{% hint style="success" %}
-**任务2**：完成 `sysfile.c` 中的 `pipe2`，实现相关系统调用。
-{% endhint %}
+> [!important]
+> **任务2**：完成 `sysfile.c` 中的 `pipe2`，实现相关系统调用。
 
-{% hint style="info" %}
-**提示**：可以参考 [xv6 pipe 的实现](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/pipe.c)。
-{% endhint %}
+> [!info]
+> **提示**：可以参考 [xv6 pipe 的实现](https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/pipe.c)。
 
 ## 6. Memory Management
 
@@ -549,9 +524,8 @@ ELF 是一种用于二进制文件、可执行文件等文件的文件格式，�
 
 可以发现，前面的实验中，我们的（用户）页表都是静态的，即设置完成后不会在进程的生命周期内动态修改。然而，经过理论课的学习我们知道，许多重要的内存管理机制（如 Lazy Allocation，Copy on Write，Demand Paging 等）都依用户页表的动态更新。我们需要通过 Page Fault，引导内核更新页表，动态调整用户态进程的地址映射，提高系统内存的灵活性
 
-{% hint style="info" %}
-我们可以通过 `(h)top` 指令查看进程以及内存的使用情况（比如在 `top` 命令中，`VIRT` 表示的是虚拟内存地址空间的大小，`RES` 是实际占用的内存数量），我们发现进程的虚拟地址往往比他们拥有的多，倘若直接把所有的进程的虚拟地址都分配物理页的话，会大幅度降低内存利用率，这是动态分配内存的一个重要优点。
-{% endhint %}
+> [!info]
+> 我们可以通过 `(h)top` 指令查看进程以及内存的使用情况（比如在 `top` 命令中，`VIRT` 表示的是虚拟内存地址空间的大小，`RES` 是实际占用的内存数量），我们发现进程的虚拟地址往往比他们拥有的多，倘若直接把所有的进程的虚拟地址都分配物理页的话，会大幅度降低内存利用率，这是动态分配内存的一个重要优点。
 
 #### 6.1.3. Page Fault
 
@@ -590,9 +564,8 @@ sys_sbrk(void)
 
 直接分配会导致大量内存的的浪费，更好的做法是只增加段的 `size`，等到进程执行到对应地址时会触发 Page Fault，这时我们再调用 `kalloc_page` 申请物理页，并根据出错的虚拟地址（需要的信息）建立映射。
 
-{% hint style="info" %}
-虚拟内存中提到的**抽象性**：每个应用程序都觉得自己占有了全部的硬件资源（但实际上并不是），而且应用程序来说很难预测自己需要多少内存，所以通常来说，应用程序倾向于申请多于自己所需要的内存。
-{% endhint %}
+> [!info]
+> 虚拟内存中提到的**抽象性**：每个应用程序都觉得自己占有了全部的硬件资源（但实际上并不是），而且应用程序来说很难预测自己需要多少内存，所以通常来说，应用程序倾向于申请多于自己所需要的内存。
 
 ##### Copy on Write (Zero Fill On Demand)
 
@@ -610,9 +583,8 @@ sys_sbrk(void)
 
 另外一种写时复制的应用场景，那就是 fork 时的 Copy on Write。
 
-{% hint style="info" %}
-当 shell 处理指令时，它会通过 fork 创建一个子进程。该子进程执行的第一件事情就是调用 `exec` 运行一些其他程序，而 `exec` 做的第一件事情就是丢弃自身地址空间，取而代之的是一个包含了要执行的文件的地址空间。
-{% endhint %}
+> [!info]
+> 当 shell 处理指令时，它会通过 fork 创建一个子进程。该子进程执行的第一件事情就是调用 `exec` 运行一些其他程序，而 `exec` 做的第一件事情就是丢弃自身地址空间，取而代之的是一个包含了要执行的文件的地址空间。
 
 当我们用 fork 创建子进程时，可以不立刻创建、分配并拷贝内容到新的物理内存，而是先共享父进程的物理内存空间。
 
@@ -680,17 +652,15 @@ struct pgdir {
 
 ### 6.3. 任务
 
-{% hint style="success" %}
-**任务 1**：准备用户程序堆并实现 sbrk() 系统调用
-{% endhint %}
+> [!important]
+> **任务 1**：准备用户程序堆并实现 sbrk() 系统调用
 
 **用户程序堆：**我们需要在初始化进程时为进程创建一个初始大小为 `0` 的堆，并将该 `section` 记录在进程的 `pgdir` 中。堆的起始地址一般取决于用户程序内存空间 layout，但由于本次实验不涉及其他段，暂时可以随意制定一个（合法的）堆的起始地址。
 
 **`sbrk()`系统调用**：该系统调用的功能是 Set Program Break，即设置进程的堆的终止位置。
 
-{% hint style="warning" %}
-本次实验中暂不需要在`SYSCALL_TABLE`中注册该系统调用
-{% endhint %}
+> [!warning]
+> 本次实验中暂不需要在`SYSCALL_TABLE`中注册该系统调用
 
 **函数模板**：
 
@@ -703,15 +673,13 @@ u64 sbrk(i64 size);
 
 **实现思路：**当用户程序调用 `sbrk()` 时，我们需要将堆的终止位置增加 `size`，并返回修改前的堆终止位置的地址。我们将新的堆终止位置记录在 `section` 结构体中，并通过 Lazy Allocation 的方法来实现新的页的分配。
 
-{% hint style="success" %}
-**任务 2**：实现 Lazy Allocation 和 Copy on Write。
-{% endhint %}
+> [!important]
+> **任务 2**：实现 Lazy Allocation 和 Copy on Write。
 
 **Lazy Allocation**
 
-{% hint style="warning" %}
-在本实验中，我们只需要关注 heap 段。其他段会在后续实验中涉及。
-{% endhint %}
+> [!warning]
+> 在本实验中，我们只需要关注 heap 段。其他段会在后续实验中涉及。
 
 1. 当用户程序调用 `sbrk()` 时，我们并不需要立即将新的页分配给用户进程，只须把新的 heap 终止位置记录到对应的 `section` 结构体中即可。
 2. 这样，当用户程序访问到新的 heap 时，会触发缺页异常，我们在缺页异常处理程序中，判断缺页地址是否在 heap 中，如果是，说明应当是 Lazy Allocation 的情形。（这种判断方法是否严谨？）
@@ -721,9 +689,8 @@ u64 sbrk(i64 size);
 
 **Copy on Write**
 
-{% hint style="warning" %}
-在后续实验中，我们会在创建bss段和 `fork()` 时使用 Copy on Write。
-{% endhint %}
+> [!warning]
+> 在后续实验中，我们会在创建bss段和 `fork()` 时使用 Copy on Write。
 
 1. 我们在系统启动时分配出来一个页，将其内容初始化为全零。我们将该页指定为共享全零页，每次有进程需要创建一个全零页时，我们创建一个到共享全零页的**只读**映射即可。需要保证该页永远不会被释放。
 2. 如果进程需要对全零页进行**写入**操作时，会触发缺页异常。同样地，我们可以在缺页异常处理程序中判定这是否是 Copy on Write 的情形。
@@ -767,9 +734,8 @@ WARN_RESULT void *get_zero_page() {
 
 返回共享全零页。
 
-{% hint style="danger" %}
-**特别提醒：**修改页表后需要调用`arch_tlbi_vmalle1is()`以清空 TLB 。忘记清空 TLB 将引发难排查的 BUG 。
-{% endhint %}
+> [!danger]
+> **特别提醒：**修改页表后需要调用`arch_tlbi_vmalle1is()`以清空 TLB 。忘记清空 TLB 将引发难排查的 BUG 。
 
 ## 7. File Mapping
 
@@ -785,14 +751,13 @@ Linux通过内存映像机制来提供用户程序对内存直接访问的能力
 
 ### 7.1. 任务
 
-{% hint style="success" %}
-**任务 1**：实现下列系统调用。
-
-```c
-void *mmap (void *addr, size_t length, int prot, int flags, int fd, off_t offset);
-int munmap(void *addr, size_t length);
-```
-{% endhint %}
+> [!important]
+> **任务 1**：实现下列系统调用。
+>
+> ```c
+> void *mmap (void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+> int munmap(void *addr, size_t length);
+> ```
 
 ## 8. 构建、测试与提交
 
