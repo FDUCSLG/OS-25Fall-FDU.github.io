@@ -272,52 +272,51 @@ int execve(const char* path, char* const argv[], char* const envp[])
 > [!info]
 > **思考**：是否需要把 `argv` 和 `envp` 中的实际文本信息复制到新进程的地址空间中？
 
-{% hint style="info" %}
-**提示**：下面提供了一个 `execve` 的大致流程：
-
-```
-/*
- * Step1: Load data from the file stored in `path`.
- * The first `sizeof(struct Elf64_Ehdr)` bytes is the ELF header part.
- * You should check the ELF magic number and get the `e_phoff` and `e_phnum` which is the starting byte of program header.
- *
- * Step2: Load program headers and the program itself
- * Program headers are stored like: struct Elf64_Phdr phdr[e_phnum];
- * e_phoff is the offset of the headers in file, namely, the address of phdr[0].
- * For each program header, if the type(p_type) is LOAD, you should load them:
- * A naive way is 
- * (1) allocate memory, va region [vaddr, vaddr+filesz)
- * (2) copy [offset, offset + filesz) of file to va [vaddr, vaddr+filesz) of memory
- * Since we have applied dynamic virtual memory management, you can try to only set the file and offset (lazy allocation)
- * (hints: there are two loadable program headers in most exectuable file at this lab, the first header indicates the text section(flag=RX) and the second one is the data+bss section(flag=RW). You can verify that by check the header flags. The second header has [p_vaddr, p_vaddr+p_filesz) the data section and [p_vaddr+p_filesz, p_vaddr+p_memsz) the bss section which is required to set to 0, you may have to put data and bss in a single struct section. COW by using the zero page is encouraged)
-
- * Step3: Allocate and initialize user stack.
- * The va of the user stack is not required to be any fixed value. It can be randomized. (hints: you can directly allocate user stack at one time, or apply lazy allocation)
- * Push argument strings.
- * The initial stack may like
- *   +-------------+
- *   | envp[m] = 0 |
- *   +-------------+
- *   |    ....     |
- *   +-------------+
- *   |   envp[0]   |  ignore the envp if you do not want to implement
- *   +-------------+
- *   | argv[n] = 0 |  n == argc
- *   +-------------+
- *   |    ....     |
- *   +-------------+
- *   |   argv[0]   |
- *   +-------------+
- *   |    argc     |
- *   +-------------+  <== sp
-
- * ## Example
- * sp -= 8; *(size_t *)sp = argc; (hints: sp can be directly written if current pgdir is the new one)
- * thisproc()->tf->sp = sp; (hints: Stack pointer must be aligned to 16B!)
- * The entry point addresses is stored in elf_header.entry
-*/ 
-```
-{% endhint %}
+> [!info]
+> **提示**：下面提供了一个 `execve` 的大致流程：
+> 
+> ```
+> /*
+>  * Step1: Load data from the file stored in `path`.
+>  * The first `sizeof(struct Elf64_Ehdr)` bytes is the ELF header part.
+>  * You should check the ELF magic number and get the `e_phoff` and `e_phnum` which is the starting byte of program header.
+>  *
+>  * Step2: Load program headers and the program itself
+>  * Program headers are stored like: struct Elf64_Phdr phdr[e_phnum];
+>  * e_phoff is the offset of the headers in file, namely, the address of phdr[0].
+>  * For each program header, if the type(p_type) is LOAD, you should load them:
+>  * A naive way is 
+>  * (1) allocate memory, va region [vaddr, vaddr+filesz)
+>  * (2) copy [offset, offset + filesz) of file to va [vaddr, vaddr+filesz) of memory
+>  * Since we have applied dynamic virtual memory management, you can try to only set the file and offset (lazy allocation)
+>  * (hints: there are two loadable program headers in most exectuable file at this lab, the first header indicates the text section(flag=RX) and the second one is the data+bss section(flag=RW). You can verify that by check the header flags. The second header has [p_vaddr, p_vaddr+p_filesz) the data section and [p_vaddr+p_filesz, p_vaddr+p_memsz) the bss section which is required to set to 0, you may have to put data and bss in a single struct section. COW by using the zero page is encouraged)
+> 
+>  * Step3: Allocate and initialize user stack.
+>  * The va of the user stack is not required to be any fixed value. It can be randomized. (hints: you can directly allocate user stack at one time, or apply lazy allocation)
+>  * Push argument strings.
+>  * The initial stack may like
+>  *   +-------------+
+>  *   | envp[m] = 0 |
+>  *   +-------------+
+>  *   |    ....     |
+>  *   +-------------+
+>  *   |   envp[0]   |  ignore the envp if you do not want to implement
+>  *   +-------------+
+>  *   | argv[n] = 0 |  n == argc
+>  *   +-------------+
+>  *   |    ....     |
+>  *   +-------------+
+>  *   |   argv[0]   |
+>  *   +-------------+
+>  *   |    argc     |
+>  *   +-------------+  <== sp
+> 
+>  * ## Example
+>  * sp -= 8; *(size_t *)sp = argc; (hints: sp can be directly written if current pgdir is the new one)
+>  * thisproc()->tf->sp = sp; (hints: Stack pointer must be aligned to 16B!)
+>  * The entry point addresses is stored in elf_header.entry
+> */ 
+> ```
 
 > [!info]
 > **提示**：在`execve()`中，一般可执行文件中可以加载的只有两段：RX的部分+RW的部分（其它部分会跳过）（因此只设置两种状态，一种是RX，另一种是RW）
@@ -778,4 +777,4 @@ make qemu
 
 当你完成全部任务后，如果一切顺利，将进入 shell，你可以自己运行里面的程序。我们也编写了一个 `usertests` 程序供测试。
 
-提交日期为 <mark style="color:red;">**2025 年 1 月 26 日**</mark>，如有特殊情况请联系助教。
+提交日期为 <mark style="color:red;">**2026 年 1 月 26 日**</mark>，如有特殊情况请联系助教。
