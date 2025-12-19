@@ -492,7 +492,7 @@ static void uartintr()
 
 ## 6. Memory Management
 
-负责助教：[肖德](mailto:dxiao21@m.fudan.edu.cn)
+负责助教：[孔令宇](mailto:lykong22@m.fudan.edu.cn)
 
 本次实验为初步了解一些用户态程序的内存管理功能。包括修改程序堆的大小、Lazy Allocation 和 Copy on Write。
 
@@ -503,7 +503,7 @@ static void uartintr()
 ELF 是一种用于二进制文件、可执行文件等文件的文件格式，是 Linux 的主要可执行文件格式。ELF 格式将可执行文件分成几个不同的`section`，一个程序主要由 `anonymous` 段和 `file-backed` 段组成：
 
 * **`anonymous`段**：执行时才会创建的段，可执行文件本身不包含，比如`bss`（减少文件大小）、`stack`（执行时才能确定其中的内容）。
-* **`file-backed` 段**：可执行文件本身就拥有的段，比如`text`（可执行文件的代码段）、`data`（已初始化的数据段）。
+* **`file-backed` 段**：可执行文件本身就拥有的段，比如`text`（可执行文件的代码段）、`dat（已初始化的数据段）。
 
 其中从 `text` 到 `stack`，对应的虚拟地址一般是逐渐增加的（见下图）。我们可以通过 `size` 命令查看一个可执行文件的各个段的大小。
 
