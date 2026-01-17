@@ -756,7 +756,17 @@ Linux通过内存映像机制来提供用户程序对内存直接访问的能力
 > int munmap(void *addr, size_t length);
 > ```
 
-## 8. 构建、测试与提交
+## 8. bonus
+同学可以自己就一个感兴趣的系统组建进行功能扩充。
+
+## 9. 构建、测试与提交
+
+```shell
+git fetch --all
+git checkout final
+git checkout -b final-dev
+git merge lab6-dev
+```
 
 在拉取了最新的框架后，我们需要：
 
